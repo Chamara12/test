@@ -1,0 +1,181 @@
+{% extends "layout.html" %}
+
+{% block title %}Credit Settings - Admin - Article Writing Website{% endblock %}
+
+{% block content %}
+<h2>Credit Settings</h2>
+
+<div class="card">
+    <h3>Credit System Configuration</h3>
+    
+    <form action="{{ url_for('admin.save_credit_settings') }}" method="post">
+        <div class="form-group">
+            <label for="credits_per_dollar">Credits Per Dollar</label>
+            <input type="number" id="credits_per_dollar" name="credits_per_dollar" value="{{ credits_per_dollar }}" required min="1">
+            <small>Number of credits users receive per USD (e.g., 5000 credits = $1)</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="minimum_deposit">Minimum Deposit (USD)</label>
+            <input type="number" id="minimum_deposit" name="minimum_deposit" value="{{ minimum_deposit }}" required min="1">
+            <small>Minimum amount users can deposit</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="credits_per_word">Credits Per Word</label>
+            <input type="number" id="credits_per_word" name="credits_per_word" value="{{ credits_per_word }}" required min="1">
+            <small>Number of credits charged per word (default: 1 credit = 1 word)</small>
+        </div>
+        
+        <div class="form-group mb-4">
+            <label for="first_time_free_credits" class="block text-gray-700 text-sm font-bold mb-2">
+                First-Time Free Credits
+            </label>
+            <div class="flex items-center">
+                <input id="first_time_free_credits" name="first_time_free_credits" type="number" min="0" 
+                       value="{{ settings.first_time_free_credits }}" 
+                       class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-2">
+                <span class="text-gray-600">credits</span>
+            </div>
+            <p class="text-sm text-gray-600 mt-1">
+                Free credits given to new users upon registration. Set to 0 to disable.
+            </p>
+        </div>
+        
+        <div class="form-group mb-4">
+            <label for="credit_expiry_days" class="block text-gray-700 text-sm font-bold mb-2">
+                Credit Expiration (Days)
+            </label>
+            <div class="flex items-center">
+                <input id="credit_expiry_days" name="credit_expiry_days" type="number" min="0" 
+                       value="{{ settings.credit_expiry_days }}" 
+                       class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-2">
+                <span class="text-gray-600">days</span>
+            </div>
+            <p class="text-sm text-gray-600 mt-1">
+                Number of days before credits expire after purchase. Set to 0 to disable expiration.
+            </p>
+        </div>
+        
+        <div class="form-group mb-4">
+            <label for="article_auto_delete_days" class="block text-gray-700 text-sm font-bold mb-2">
+                Auto-Delete Articles (Days)
+            </label>
+            <div class="flex items-center">
+                <input id="article_auto_delete_days" name="article_auto_delete_days" type="number" min="0" 
+                       value="{{ settings.article_auto_delete_days }}" 
+                       class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-2">
+                <span class="text-gray-600">days</span>
+            </div>
+            <p class="text-sm text-gray-600 mt-1">
+                Number of days after which articles will be automatically deleted. Set to 0 to disable auto-deletion.
+            </p>
+        </div>
+        
+        <button type="submit" class="btn">Save Settings</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>Payment History</h3>
+    
+    {% if payments %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>User</th>
+                    <th>Amount</th>
+                    <th>Credits</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td>{{ payment.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ payment.full_name }} ({{ payment.email }})</td>
+                    <td>${{ '%.2f'|format(payment.amount) }}</td>
+                    <td>{{ payment.credits_added|intcomma }}</td>
+                    <td>{{ payment.payment_method|title }}</td>
+                    <td>
+                        <span class="status-badge {{ 'status-completed' if payment.status == 'completed' else 'status-pending' }}">
+                            {{ payment.status|title }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No payment history found.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h3>Credit Usage Statistics</h3>
+    
+    <div class="stats-grid">
+        <div class="stats-card">
+            <h4>Total Credits Purchased</h4>
+            <p>{{ total_purchased|intcomma }}</p>
+        </div>
+        <div class="stats-card">
+            <h4>Total Credits Used</h4>
+            <p>{{ total_used|intcomma }}</p>
+        </div>
+        <div class="stats-card">
+            <h4>Total Revenue</h4>
+            <p>${{ '%.2f'|format(total_revenue) }}</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1rem;
+    }
+    
+    .stats-card {
+        background-color: #F9FAFB;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #E5E7EB;
+    }
+    
+    .stats-card h4 {
+        font-size: 0.875rem;
+        color: #6B7280;
+        margin-bottom: 0.5rem;
+        margin-top: 0;
+    }
+    
+    .stats-card p {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin: 0;
+    }
+    
+    .status-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .status-completed {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: #10B981;
+    }
+    
+    .status-pending {
+        background-color: rgba(245, 158, 11, 0.1);
+        color: #F59E0B;
+    }
+</style>
+{% endblock %} 

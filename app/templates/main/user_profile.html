@@ -1,0 +1,204 @@
+{% extends "layout.html" %}
+
+{% block title %}My Profile - Article Writing Website{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<h2 class="profile-page-title">My Profile</h2>
+
+<div class="profile-grid">
+    <div class="card profile-info">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                {{ user.full_name|first|upper }}
+            </div>
+            <h3>{{ user.full_name }}</h3>
+            <p class="profile-email">{{ user.email }}</p>
+            <p class="profile-meta">
+                <i class="fas fa-calendar-alt"></i> Member since {{ user.created_at.strftime('%B %d, %Y') }}
+            </p>
+        </div>
+        
+        <div class="profile-stats">
+            <div class="stat-item">
+                <span class="stat-value">{{ stats.article_count }}</span>
+                <span class="stat-label">Articles</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ stats.credits_balance|intcomma }}</span>
+                <span class="stat-label">Credits</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ stats.words_generated|intcomma }}</span>
+                <span class="stat-label">Words</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h3><i class="fas fa-user-edit"></i> Update Profile</h3>
+        
+        <form action="{{ url_for('main.update_profile') }}" method="post" class="profile-form">
+            <div class="form-group">
+                <label class="form-label" for="full_name">Full Name</label>
+                <input type="text" id="full_name" name="full_name" value="{{ user.full_name }}" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="email">Email Address</label>
+                <input type="email" id="email" name="email" value="{{ user.email }}" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="switch-label">
+                    <span>Enable Two-Factor Authentication</span>
+                    <div class="switch">
+                        <input type="checkbox" id="otp_enabled_for_login" name="otp_enabled_for_login" {% if otp_settings.otp_enabled_for_login %}checked{% endif %}>
+                        <span class="slider"></span>
+                    </div>
+                </label>
+                <p class="hint"><i class="fas fa-shield-alt"></i> When enabled, you'll be asked for a verification code each time you log in.</p>
+            </div>
+            
+            <div class="section-divider">
+                <span><i class="fas fa-lock"></i> Password Change</span>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="current_password">Current Password</label>
+                <input type="password" id="current_password" name="current_password" class="form-control">
+                <p class="hint">Leave blank if you don't want to change your password</p>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="new_password">New Password</label>
+                    <input type="password" id="new_password" name="new_password" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="confirm_password">Confirm New Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-control">
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update Profile</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <h3><i class="fas fa-history"></i> Usage History</h3>
+    
+    <div class="tabs">
+        <button class="tab-button active" onclick="openTab(event, 'articles-tab')"><i class="fas fa-file-alt"></i> Articles</button>
+        <button class="tab-button" onclick="openTab(event, 'credits-tab')"><i class="fas fa-coins"></i> Credit Transactions</button>
+    </div>
+    
+    <div id="articles-tab" class="tab-content" style="display: block;">
+        {% if articles %}
+            <div class="table-container">
+                <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Date</th>
+                        <th>Words</th>
+                        <th>AI Model</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in articles %}
+                    <tr>
+                        <td>{{ article.title }}</td>
+                        <td>{{ article.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ article.credits_cost|default("N/A") }}</td>
+                        <td>{{ article.model|default("N/A") }}</td>
+                        <td>
+                            <a href="{{ url_for('main.view_article', article_id=article.id) }}" class="btn btn-small btn-outline"><i class="fas fa-eye"></i> View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-file-alt"></i>
+                <p>You haven't generated any articles yet.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div id="credits-tab" class="tab-content">
+        {% if credit_transactions %}
+            <div class="table-container">
+                <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Credits</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tx in credit_transactions %}
+                    <tr>
+                        <td>{{ tx.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="{{ 'positive' if tx.credits_amount > 0 else 'negative' }}">
+                            {{ tx.credits_amount|intcomma }}
+                        </td>
+                        <td>{{ tx.transaction_type|title }}</td>
+                        <td>{{ tx.description }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-coins"></i>
+                <p>No credit transactions found.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card danger-zone">
+    <h3><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
+    <p>Permanently delete your account and all your data. This action cannot be undone.</p>
+    <div class="danger-actions">
+        <a href="{{ url_for('main.delete_account') }}" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Delete My Account</a>
+    </div>
+</div>
+
+
+
+<script>
+    function openTab(evt, tabName) {
+        // Hide all tab contents
+        const tabContents = document.getElementsByClassName("tab-content");
+        for (let i = 0; i < tabContents.length; i++) {
+            tabContents[i].style.display = "none";
+        }
+        
+        // Remove active class from all tab buttons
+        const tabButtons = document.getElementsByClassName("tab-button");
+        for (let i = 0; i < tabButtons.length; i++) {
+            tabButtons[i].className = tabButtons[i].className.replace(" active", "");
+        }
+        
+        // Show the selected tab content and add active class to the button
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+</script>
+{% endblock %} 

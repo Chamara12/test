@@ -1,0 +1,199 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">Edit User</h1>
+    
+    <form class="user-form bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-2xl" method="POST" action="{{ url_for('admin.update_user', user_id=user.id) }}">
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="full_name">
+                Full Name
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="full_name" name="full_name" type="text" value="{{ user.full_name }}" required>
+        </div>
+        
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
+                Email
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" name="email" type="email" value="{{ user.email }}" required>
+        </div>
+        
+        <div class="form-section">
+            <h4>Account Settings</h4>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">
+                    Account Status
+                </label>
+                <div class="mt-2">
+                    <label class="inline-flex items-center">
+                        <input type="radio" class="form-radio" name="is_verified" value="1" {% if user.is_verified %}checked{% endif %}>
+                        <span class="ml-2">Verified</span>
+                    </label>
+                    <label class="inline-flex items-center ml-6">
+                        <input type="radio" class="form-radio" name="is_verified" value="0" {% if not user.is_verified %}checked{% endif %}>
+                        <span class="ml-2">Unverified</span>
+                    </label>
+                </div>
+                <p class="hint">Unverified accounts need to complete email verification before they can log in</p>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">
+                    User Role
+                </label>
+                <div class="mt-2">
+                    <label class="inline-flex items-center">
+                        <input type="radio" class="form-radio" name="is_admin" value="0" {% if not user.is_admin %}checked{% endif %}>
+                        <span class="ml-2">Regular User</span>
+                    </label>
+                    <label class="inline-flex items-center ml-6">
+                        <input type="radio" class="form-radio" name="is_admin" value="1" {% if user.is_admin %}checked{% endif %}>
+                        <span class="ml-2">Administrator</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h4>Password</h4>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="new_password">
+                    New Password (leave blank to keep current)
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="new_password" name="new_password" type="password" placeholder="New password">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="confirm_password">
+                    Confirm New Password
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="confirm_password" name="confirm_password" type="password" placeholder="Confirm new password">
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h4>Security Settings</h4>
+            
+            <div class="mb-4">
+                <label class="switch-label">
+                    <span>Enable two-factor authentication for login</span>
+                    <label class="switch">
+                        <input type="checkbox" name="otp_enabled_for_login" {% if otp_settings and otp_settings.otp_enabled_for_login %}checked{% endif %}>
+                        <span class="slider"></span>
+                    </label>
+                </label>
+                <p class="hint">User will be required to enter a one-time code sent to their email when logging in</p>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button class="bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                Save Changes
+            </button>
+            <a href="{{ url_for('admin.manage_users') }}" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .form-section {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #E5E7EB;
+    }
+    
+    .form-section h4 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        color: #4B5563;
+    }
+    
+    .hint {
+        font-size: 0.875rem;
+        color: #6B7280;
+        margin-top: 0.5rem;
+        margin-bottom: 0;
+    }
+    
+    .switch-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: normal;
+    }
+    
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+        margin-left: 10px;
+    }
+    
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 24px;
+    }
+    
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+        background-color: #7D4BCB;
+    }
+    
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+</style>
+
+<script>
+    // Add password validation
+    document.querySelector('.user-form').addEventListener('submit', function(e) {
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        
+        if (newPassword !== '' && newPassword !== confirmPassword) {
+            e.preventDefault();
+            alert('New password and confirmation do not match.');
+        }
+        
+        if (newPassword !== '' && newPassword.length < 8) {
+            e.preventDefault();
+            alert('Password must be at least 8 characters long.');
+        }
+    });
+</script>
+{% endblock %} 

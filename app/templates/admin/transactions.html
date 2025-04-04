@@ -1,0 +1,244 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+<div class="admin-container">
+    <h2>Transaction Management</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <h4 class="card-title">{{ stats.total_added | default(0) | format_number }}</h4>
+                    <p class="card-text">Total Credits Added</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <h4 class="card-title">{{ stats.total_deducted | default(0) | format_number }}</h4>
+                    <p class="card-text">Total Credits Used</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <h4 class="card-title">{{ stats.pending_count | default(0) }}</h4>
+                    <p class="card-text">Pending Transactions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <h4 class="card-title">{{ stats.pending_amount | default(0) | format_number }}</h4>
+                    <p class="card-text">Pending Credits</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3>Auto-Cleanup Settings</h3>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('admin.transaction_action') }}" method="POST">
+                <input type="hidden" name="action" value="update_cleanup">
+                <div class="form-group row">
+                    <label for="cleanup_days" class="col-sm-4 col-form-label">Auto-cleanup after (days):</label>
+                    <div class="col-sm-4">
+                        <input type="number" class="form-control" id="cleanup_days" name="cleanup_days" 
+                               value="{{ auto_cleanup_days }}" min="1" max="365">
+                    </div>
+                    <div class="col-sm-4">
+                        <button type="submit" class="btn btn-primary">Update Setting</button>
+                        
+                        <button type="submit" class="btn btn-warning" 
+                                formaction="{{ url_for('admin.transaction_action') }}"
+                                onclick="return confirm('Are you sure you want to run cleanup now? This will archive transactions older than the specified days.');">
+                            <input type="hidden" name="action" value="run_cleanup">
+                            Run Cleanup Now
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <p class="text-muted mt-3">
+                Completed transactions (approved or cancelled) older than this number of days 
+                will be automatically archived to save database space.
+            </p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3>Transactions</h3>
+            <div class="filter-controls">
+                <form action="{{ url_for('admin.transactions') }}" method="GET" class="form-inline">
+                    <select name="status" class="form-control mr-2" onchange="this.form.submit()">
+                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                        <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                    
+                    <input type="text" name="user_id" class="form-control mr-2" 
+                           placeholder="User ID filter" value="{{ user_filter or '' }}">
+                           
+                    <button type="submit" class="btn btn-sm btn-primary">Apply Filters</button>
+                    <a href="{{ url_for('admin.transactions') }}" class="btn btn-sm btn-secondary ml-2">Reset</a>
+                </form>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Amount</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in transactions %}
+                        <tr>
+                            <td>{{ tx.id }}</td>
+                            <td>
+                                {{ tx.full_name }} ({{ tx.email }})<br>
+                                <small>ID: {{ tx.user_id }}</small>
+                            </td>
+                            <td class="text-{{ 'success' if tx.amount > 0 else 'danger' }}">
+                                {{ tx.amount | format_number }}
+                            </td>
+                            <td>{{ tx.transaction_type }}</td>
+                            <td>
+                                {{ tx.description }}
+                                {% if tx.reference_id %}
+                                <br><small>Ref: {{ tx.reference_id }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ 
+                                    'warning' if tx.status == 'pending' else 
+                                    'success' if tx.status == 'approved' else 
+                                    'danger' 
+                                }}">
+                                    {{ tx.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {{ tx.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            </td>
+                            <td>
+                                {% if tx.status == 'pending' %}
+                                <div class="btn-group">
+                                    <form action="{{ url_for('admin.transaction_action') }}" method="POST">
+                                        <input type="hidden" name="transaction_id" value="{{ tx.id }}">
+                                        <input type="hidden" name="action" value="approve">
+                                        <button type="submit" class="btn btn-sm btn-success mr-1"
+                                                onclick="return confirm('Are you sure you want to approve this transaction?');">
+                                            Approve
+                                        </button>
+                                    </form>
+                                    
+                                    <button type="button" class="btn btn-sm btn-danger" 
+                                            data-toggle="modal" data-target="#cancelModal{{ tx.id }}">
+                                        Cancel
+                                    </button>
+                                </div>
+                                
+                                <!-- Cancel Modal -->
+                                <div class="modal fade" id="cancelModal{{ tx.id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Cancel Transaction</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <form action="{{ url_for('admin.transaction_action') }}" method="POST">
+                                                <div class="modal-body">
+                                                    <input type="hidden" name="transaction_id" value="{{ tx.id }}">
+                                                    <input type="hidden" name="action" value="cancel">
+                                                    
+                                                    <div class="form-group">
+                                                        <label for="reason">Cancellation Reason:</label>
+                                                        <textarea class="form-control" name="reason" rows="3" required></textarea>
+                                                    </div>
+                                                    
+                                                    <p class="text-danger">
+                                                        Warning: This action cannot be undone. The transaction will be marked as cancelled.
+                                                    </p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                    <button type="submit" class="btn btn-danger">Cancel Transaction</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <span class="text-muted">No actions available</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center">No transactions found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if total_pages > 1 %}
+            <nav aria-label="Transaction pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.transactions', page=page-1, per_page=per_page, status=status_filter, user_id=user_filter) }}">
+                            Previous
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                    {% endif %}
+                    
+                    {% for p in range(max(1, page-2), min(total_pages+1, page+3)) %}
+                    <li class="page-item {{ 'active' if p == page else '' }}">
+                        <a class="page-link" href="{{ url_for('admin.transactions', page=p, per_page=per_page, status=status_filter, user_id=user_filter) }}">
+                            {{ p }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                    
+                    {% if page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.transactions', page=page+1, per_page=per_page, status=status_filter, user_id=user_filter) }}">
+                            Next
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

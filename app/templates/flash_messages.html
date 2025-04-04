@@ -1,0 +1,18 @@
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-messages mb-4">
+      {% for category, message in messages %}
+        {% set alert_color = {
+          'success': 'green',
+          'error': 'red', 
+          'warning': 'yellow',
+          'info': 'blue'
+        }.get(category, 'blue') %}
+        
+        <div class="bg-{{ alert_color }}-50 border-l-4 border-{{ alert_color }}-500 text-{{ alert_color }}-700 p-4 mb-2" role="alert">
+          <p>{{ message }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %} 

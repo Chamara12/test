@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block title %}Home - Article Writing Website{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1>SEO-Friendly Article Writing</h1>
+    <p>Generate high-quality, SEO-optimized articles using AI technology</p>
+    {% if not session.get('user_id') %}
+        <div class="hero-buttons">
+            <a href="{{ url_for('auth.register') }}" class="btn">Sign Up</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">Login</a>
+        </div>
+    {% else %}
+        <div class="hero-buttons">
+            <a href="{{ url_for('main.generate_article') }}" class="btn">Generate Article</a>
+        </div>
+    {% endif %}
+</div>
+
+{% if articles %}
+<div class="card">
+    <h2>Recent Articles</h2>
+    <div class="article-list">
+        {% for article in articles %}
+        <div class="article-preview">
+            <h3><a href="{{ url_for('main.view_article', article_id=article.id) }}">{{ article.title }}</a></h3>
+            <div class="article-meta">
+                <span>By {{ article.author }}</span>
+                <span>{{ article.created_at.strftime('%Y-%m-%d') }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %} 

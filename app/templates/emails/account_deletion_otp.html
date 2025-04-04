@@ -1,0 +1,23 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h2>Account Deletion Verification</h2>
+
+<p>Hello {{ user.full_name }},</p>
+
+<p>We received a request to delete your Article Writer Pro account. To confirm this action, please enter the following verification code:</p>
+
+<div class="code-box">{{ otp_code }}</div>
+
+<p>This code will expire in 10 minutes.</p>
+
+<div class="info-box" style="border-left-color: #e53e3e;">
+    <p><strong>Warning:</strong></p>
+    <p>Deleting your account is permanent. All your data, including articles, credit history, and payment records will be permanently removed.</p>
+</div>
+
+<p>If you didn't request to delete your account, please ignore this email and contact our support team immediately.</p>
+
+<p>Best regards,<br>
+The Article Writer Pro Team</p>
+{% endblock %} 

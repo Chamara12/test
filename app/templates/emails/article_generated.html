@@ -1,0 +1,29 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h2>Your Article Has Been Generated</h2>
+
+<p>Hello {{ user.full_name }},</p>
+
+<p>Good news! Your article "<strong>{{ article.title }}</strong>" has been successfully generated and is ready for you to view and export.</p>
+
+<div class="info-box">
+    <h3 style="margin-top: 0;">Article Details:</h3>
+    <p><strong>Title:</strong> {{ article.title }}</p>
+    <p><strong>Model:</strong> {{ article.model }}</p>
+    <p><strong>Word Count:</strong> approximately {{ article.content|wordcount }} words</p>
+    <p><strong>Credits Used:</strong> {{ article.credits_cost|intcomma }}</p>
+    <p><strong>Generated On:</strong> {{ article.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+</div>
+
+<p style="text-align: center;">
+    <a href="{{ url_for('main.view_article', article_id=article.id, _external=True) }}" class="btn">View My Article</a>
+</p>
+
+<p>Your current credit balance is now <strong>{{ user_credits|intcomma }}</strong> credits.</p>
+
+<p>We hope you enjoy your new content! If you need to make any edits or would like to generate more articles, simply log in to your dashboard.</p>
+
+<p>Best regards,<br>
+The Article Writer Pro Team</p>
+{% endblock %} 

@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+
+{% block title %}Delete Account - Article Writing Website{% endblock %}
+
+{% block content %}
+<h2>Delete Account</h2>
+
+<div class="card danger-zone">
+    <div class="warning-container">
+        <div class="warning-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="48" height="48">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+        </div>
+        <h3>Warning: Account Deletion is Permanent</h3>
+        <p>This action cannot be undone. All your data, including articles, credits, and account information will be permanently deleted.</p>
+    </div>
+    
+    {% if otp_sent %}
+        <form action="{{ url_for('main.delete_account') }}" method="post" class="delete-form">
+            <div class="form-group">
+                <label for="otp">Verification Code</label>
+                <p class="verification-sent">A verification code has been sent to your email address <strong>{{ user.email }}</strong>.</p>
+                <input type="text" id="otp" name="otp" placeholder="Enter the 6-digit code" required pattern="[0-9]{6}" maxlength="6">
+            </div>
+            
+            <input type="hidden" name="action" value="verify_otp">
+            
+            <div class="form-actions">
+                <a href="{{ url_for('main.user_profile') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-danger">Confirm Deletion</button>
+            </div>
+        </form>
+    {% else %}
+        <div class="delete-info">
+            <p>To delete your account, we need to verify your identity. Click the button below to receive a verification code via email.</p>
+            
+            <form action="{{ url_for('main.delete_account') }}" method="post">
+                <input type="hidden" name="action" value="send_otp">
+                <button type="submit" class="btn btn-danger">Send Verification Code</button>
+                <a href="{{ url_for('main.user_profile') }}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .danger-zone {
+        border-left: 4px solid #EF4444;
+    }
+    
+    .warning-container {
+        text-align: center;
+        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .warning-icon {
+        margin: 0 auto 1rem;
+        color: #EF4444;
+        width: 48px;
+        height: 48px;
+    }
+    
+    .verification-sent {
+        background-color: rgba(16, 185, 129, 0.1);
+        padding: 0.75rem;
+        border-radius: 0.375rem;
+        margin-bottom: 1rem;
+        color: #065F46;
+    }
+    
+    .delete-info {
+        margin-bottom: 1.5rem;
+    }
+    
+    .btn-danger {
+        background-color: #EF4444;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background-color: #DC2626;
+    }
+    
+    .btn-secondary {
+        background-color: #9CA3AF;
+        color: white;
+        margin-right: 0.5rem;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #6B7280;
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: flex-start;
+        margin-top: 1.5rem;
+    }
+</style>
+{% endblock %} 

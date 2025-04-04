@@ -1,0 +1,216 @@
+{% extends "layout.html" %}
+
+{% block title %}OTP Debug - WebArticle Admin{% endblock %}
+
+{% block content %}
+<div class="dev-mode-banner">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+    </svg>
+    <span>Development Mode - OTP Debugging</span>
+</div>
+
+<h2>OTP Debug Console</h2>
+
+<div class="card">
+    <div class="header-actions">
+        <h3>Recent OTP Codes</h3>
+        <div>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+            <a href="{{ url_for('admin.otp_debug') }}" class="btn btn-primary">Refresh</a>
+        </div>
+    </div>
+    
+    <div class="warning-note">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+        <span>This page is for development purposes only. Do not expose OTP codes in production environments.</span>
+    </div>
+    
+    {% if otps %}
+        <div class="otp-list">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Created</th>
+                        <th>Email</th>
+                        <th>OTP Code</th>
+                        <th>Purpose</th>
+                        <th>Status</th>
+                        <th>Expires</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for otp in otps %}
+                    <tr class="{{ 'expired' if otp.is_used or otp.expires_at < now else '' }}">
+                        <td>{{ otp.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>{{ otp.email }}</td>
+                        <td class="otp-code">{{ otp.otp_code }}</td>
+                        <td>{{ otp.purpose }}</td>
+                        <td>
+                            {% if otp.is_used %}
+                                <span class="status-badge used">Used</span>
+                            {% elif otp.expires_at < now %}
+                                <span class="status-badge expired">Expired</span>
+                            {% else %}
+                                <span class="status-badge active">Active</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ otp.expires_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                            {% if not otp.is_used and otp.expires_at > now %}
+                            ({{ ((otp.expires_at - now).total_seconds() / 60)|int }} min left)
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No OTP codes have been generated yet.</p>
+    {% endif %}
+    
+    <div class="dev-tools">
+        <h4>Development Tools</h4>
+        <div class="tool-buttons">
+            <form action="{{ url_for('admin.generate_test_otp') }}" method="post">
+                <input type="hidden" name="purpose" value="login">
+                <button type="submit" class="btn btn-outline">Generate Test Login OTP</button>
+            </form>
+            
+            <form action="{{ url_for('admin.generate_test_otp') }}" method="post">
+                <input type="hidden" name="purpose" value="password_reset">
+                <button type="submit" class="btn btn-outline">Generate Test Password Reset OTP</button>
+            </form>
+            
+            <form action="{{ url_for('admin.generate_test_otp') }}" method="post">
+                <input type="hidden" name="purpose" value="account_deletion">
+                <button type="submit" class="btn btn-outline">Generate Test Account Deletion OTP</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .dev-mode-banner {
+        background-color: #B91C1C;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+    
+    .header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .header-actions h3 {
+        margin: 0;
+    }
+    
+    .warning-note {
+        background-color: rgba(245, 158, 11, 0.1);
+        color: #92400E;
+        padding: 0.75rem;
+        border-radius: 0.375rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .otp-list {
+        overflow-x: auto;
+        margin-bottom: 1.5rem;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        text-align: left;
+        padding: 0.75rem;
+        border-bottom: 1px solid #E5E7EB;
+        font-weight: 500;
+        color: #4B5563;
+    }
+    
+    td {
+        padding: 0.75rem;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    tr.expired {
+        color: #9CA3AF;
+    }
+    
+    .otp-code {
+        font-family: monospace;
+        font-size: 1.125rem;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .status-badge.active {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: #065F46;
+    }
+    
+    .status-badge.used {
+        background-color: rgba(107, 114, 128, 0.1);
+        color: #4B5563;
+    }
+    
+    .status-badge.expired {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: #991B1B;
+    }
+    
+    .dev-tools {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #E5E7EB;
+    }
+    
+    .dev-tools h4 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        color: #4B5563;
+    }
+    
+    .tool-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-outline {
+        background-color: transparent;
+        border: 1px solid #7D4BCB;
+        color: #7D4BCB;
+    }
+    
+    .btn-outline:hover {
+        background-color: rgba(125, 75, 203, 0.05);
+    }
+</style>
+{% endblock %} 

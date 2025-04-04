@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+
+{% block title %}
+  {% if registration %}
+    Verify Registration
+  {% else %}
+    Verify Login
+  {% endif %}
+   - Article Writer Pro
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="py-4 px-6 bg-purple-600 text-white">
+            <h2 class="text-xl font-bold">
+              {% if registration %}
+                Verify Registration
+              {% else %}
+                Verify Login
+              {% endif %}
+            </h2>
+        </div>
+        
+        <div class="py-4 px-6">
+            {% include 'flash_messages.html' %}
+            
+            <p class="mb-4">
+              {% if registration %}
+                Enter the verification code sent to your email {{ email }}.
+              {% else %}
+                Enter the verification code sent to your email {{ email }}.
+              {% endif %}
+            </p>
+            
+            {% if debug_code %}
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                <div class="flex">
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            <strong>Debug Mode:</strong> Your verification code is <span class="font-mono font-bold">{{ debug_code }}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <form method="post" action="{% if registration %}{{ url_for('auth.verify_registration_otp') }}{% else %}{{ url_for('auth.verify_otp') }}{% endif %}">
+                <div class="mb-6">
+                    <label for="otp_code" class="block text-gray-700 text-sm font-bold mb-2">Verification Code</label>
+                    <input type="text" id="otp_code" name="otp_code" required
+                           class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Verify
+                    </button>
+                    
+                    {% if not registration %}
+                    <a href="{{ url_for('auth.login') }}" class="inline-block align-baseline font-bold text-sm text-purple-600 hover:text-purple-800">
+                        Back
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('auth.register') }}" class="inline-block align-baseline font-bold text-sm text-purple-600 hover:text-purple-800">
+                        Back
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

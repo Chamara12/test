@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+
+{% block title %}Manage API Key - Admin - Article Writing Website{% endblock %}
+
+{% block content %}
+<h2>Manage X.AI API Key</h2>
+
+<div class="card">
+    <h3>X.AI API Key Settings</h3>
+    <form action="{{ url_for('admin.save_api_key') }}" method="post">
+        <div class="form-group">
+            <label for="api_key">X.AI API Key</label>
+            <input type="text" id="api_key" name="api_key" value="{{ api_key_data.api_key if api_key_data else '' }}" required>
+        </div>
+        <button type="submit" class="btn">Save & Verify API Key</button>
+    </form>
+    
+    {% if api_key_data %}
+        {% if api_key_data.is_valid %}
+            <div class="flash-message success">
+                <p><strong>✓ API Key Valid:</strong> The API key has been successfully verified with the x.ai endpoint.</p>
+                {% if api_key_data.verification_message %}
+                    <p><small>{{ api_key_data.verification_message }}</small></p>
+                {% endif %}
+                {% if api_key_data.last_verified is defined and api_key_data.last_verified %}
+                    <p><small>Last verified: {{ api_key_data.last_verified.strftime('%Y-%m-%d %H:%M:%S') }}</small></p>
+                {% else %}
+                    <p><small>Last verified: Just now</small></p>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="flash-message error">
+                <p><strong>⚠ API Key Invalid:</strong> The API key could not be verified with the x.ai endpoint.</p>
+                {% if api_key_data.verification_message %}
+                    <p><small>Error details: {{ api_key_data.verification_message }}</small></p>
+                {% endif %}
+                {% if api_key_data.last_verified is defined and api_key_data.last_verified %}
+                    <p><small>Last verification attempt: {{ api_key_data.last_verified.strftime('%Y-%m-%d %H:%M:%S') }}</small></p>
+                {% else %}
+                    <p><small>Last verification attempt: Just now</small></p>
+                {% endif %}
+                <p>Please check that:</p>
+                <ul>
+                    <li>The key format is correct (should start with 'xai-')</li>
+                    <li>The key has not expired</li>
+                    <li>Your x.ai account is active</li>
+                    <li>The API endpoint is accessible from your server</li>
+                </ul>
+                <p><strong>Note:</strong> If you're certain the key is correct but verification is failing, there might be connectivity issues with the x.ai API.</p>
+            </div>
+        {% endif %}
+    {% endif %}
+    
+    <div class="info-box" style="margin-top: 1.5rem;">
+        <p><strong>Note:</strong> This API key will be used for all article generation on the platform.</p>
+    </div>
+</div>
+
+<style>
+    .info-box {
+        padding: 0.75rem;
+        background-color: rgba(125, 75, 203, 0.1);
+        border-radius: 0.375rem;
+    }
+</style>
+{% endblock %} 

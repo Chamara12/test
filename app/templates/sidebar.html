@@ -1,0 +1,88 @@
+<!-- Light-colored sidebar template that matches the provided image -->
+<aside class="sidebar">
+    <!-- New Article Button -->
+    <a href="{{ url_for('main.generate_article') }}" class="new-article-btn">
+        <i class="fas fa-plus"></i> New article
+    </a>
+    
+    <!-- Credits Display -->
+    <div class="credits-display">
+        <i class="fas fa-coins"></i>
+        <span class="credits-amount">Credits: {{ user_credits if user_credits is defined else '0' }}</span>
+    </div>
+    
+    <!-- Main Navigation -->
+    <nav class="sidebar-nav">
+        <ul>
+            <li>
+                <a href="{{ url_for('main.dashboard') }}" {% if request.endpoint == 'main.dashboard' %}class="active"{% endif %}>
+                    <i class="fas fa-home"></i> Articles
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.credits_dashboard') }}" {% if request.endpoint == 'main.credits_dashboard' %}class="active"{% endif %}>
+                    <i class="fas fa-coins"></i> Credits
+                </a>
+            </li>
+        </ul>
+    </nav>
+    
+    <!-- Starred Section -->
+    <div class="sidebar-section starred-section">
+        <h3 class="sidebar-section-title">Starred</h3>
+    </div>
+    
+    <nav class="sidebar-nav">
+        <ul>
+            {% if starred_articles %}
+                {% for article in starred_articles %}
+                <li>
+                    <a href="{{ url_for('main.view_article', article_id=article.id) }}">
+                        <i class="fas fa-star"></i> {{ article.title|truncate(20) }}
+                    </a>
+                </li>
+                {% endfor %}
+            {% else %}
+                <li>
+                    <a href="#" class="no-starred">
+                        <i class="fas fa-info-circle"></i> No starred articles
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    
+    <!-- Recent Section -->
+    <div class="sidebar-section">
+        <h3 class="sidebar-section-title">Recent</h3>
+    </div>
+    
+    <nav class="sidebar-nav">
+        <ul>
+            {% if recent_articles %}
+                {% for article in recent_articles %}
+                <li>
+                    <a href="{{ url_for('main.view_article', article_id=article.id) }}">
+                        <i class="fas fa-file-alt"></i> {{ article.title|truncate(20) }}
+                    </a>
+                </li>
+                {% endfor %}
+            {% else %}
+                <li>
+                    <a href="#" class="no-recent">
+                        <i class="fas fa-info-circle"></i> No recent articles
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    
+    <!-- User Profile Section -->
+    <div class="user-profile">
+        <img src="{{ url_for('static', filename='img/default-avatar.png') }}" alt="User Avatar">
+        <div class="user-profile-info">
+            <div class="user-profile-name">{{ current_user.name if current_user is defined else 'User' }}</div>
+            <div class="user-profile-role">{{ current_user.role if current_user is defined else 'Member' }}</div>
+        </div>
+    </div>
+</aside>

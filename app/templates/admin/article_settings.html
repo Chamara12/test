@@ -1,0 +1,243 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+<div class="admin-container">
+    <h2>Article Generation Settings</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Word Count & Credit Settings</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.article_settings') }}">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="min_word_count">Minimum Word Count</label>
+                            <input type="number" id="min_word_count" name="min_word_count" 
+                                   class="form-control" value="{{ min_word_count }}" 
+                                   min="10" max="10000" required
+                                   onchange="updateRangePreview(); validateSettings();">
+                            <small class="form-text text-muted">The minimum word count users can select (10-10,000)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="max_word_count">Maximum Word Count</label>
+                            <input type="number" id="max_word_count" name="max_word_count" 
+                                   class="form-control" value="{{ max_word_count }}" 
+                                   min="100" max="20000" required
+                                   onchange="updateRangePreview(); validateSettings();">
+                            <small class="form-text text-muted">The maximum word count users can select (100-20,000)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="default_word_count">Default Word Count</label>
+                            <input type="number" id="default_word_count" name="default_word_count" 
+                                   class="form-control" value="{{ default_word_count }}" 
+                                   min="100" max="10000" required
+                                   onchange="updateRangePreview(); validateSettings();">
+                            <small class="form-text text-muted">The default word count when users load the page</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="credits_per_word">Default Credits Per Word</label>
+                            <input type="number" id="credits_per_word" name="credits_per_word" 
+                                   class="form-control" value="{{ credits_per_word }}" 
+                                   min="1" max="1000" required
+                                   onchange="updateCreditPreview()">
+                            <small class="form-text text-muted">Base rate for credit costs (can be overridden per model)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="preview-container">
+                            <h4>Preview</h4>
+                            
+                            <div class="slider-preview">
+                                <label>Word Count</label>
+                                <input type="range" id="preview_slider" 
+                                       min="{{ min_word_count }}" max="{{ max_word_count }}" 
+                                       value="{{ default_word_count }}" 
+                                       oninput="updateSliderValue()">
+                                <div class="range-labels">
+                                    <span id="min_label">{{ min_word_count }}</span>
+                                    <span id="current_value">{{ default_word_count }}</span>
+                                    <span id="max_label">{{ max_word_count }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="credit-cost-preview">
+                                <h5>Credit Cost Preview:</h5>
+                                <div id="model-costs">
+                                    {% for model in models %}
+                                    <div class="model-cost-item">
+                                        <span>{{ model.display_name }}:</span>
+                                        <span class="model-cost" 
+                                              data-credits-per-word="{{ model.credits_per_word }}">
+                                            {{ default_word_count * model.credits_per_word }} credits
+                                        </span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="validation-message mt-3" id="validationMessage"></div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary mt-3" id="saveBtn">Save Settings</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>Model-Specific Settings</h3>
+        </div>
+        <div class="card-body">
+            <p>To configure model-specific credit costs, please visit the <a href="{{ url_for('admin.manage_models') }}">Manage Models</a> page.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        validateSettings();
+    });
+    
+    function updateRangePreview() {
+        const minValue = parseInt(document.getElementById('min_word_count').value);
+        const maxValue = parseInt(document.getElementById('max_word_count').value);
+        const defaultValue = parseInt(document.getElementById('default_word_count').value);
+        
+        // Update the slider attributes
+        const slider = document.getElementById('preview_slider');
+        slider.min = minValue;
+        slider.max = maxValue;
+        slider.value = defaultValue;
+        
+        // Update the labels
+        document.getElementById('min_label').textContent = minValue;
+        document.getElementById('max_label').textContent = maxValue;
+        document.getElementById('current_value').textContent = defaultValue;
+        
+        // Update the cost preview
+        updateCreditPreview();
+    }
+    
+    function updateSliderValue() {
+        const slider = document.getElementById('preview_slider');
+        const wordCount = parseInt(slider.value);
+        document.getElementById('current_value').textContent = wordCount;
+        
+        // Update all model costs
+        const modelCosts = document.querySelectorAll('.model-cost');
+        modelCosts.forEach(function(element) {
+            const creditsPerWord = parseInt(element.getAttribute('data-credits-per-word'));
+            element.textContent = (wordCount * creditsPerWord) + ' credits';
+        });
+    }
+    
+    function updateCreditPreview() {
+        const wordCount = parseInt(document.getElementById('preview_slider').value);
+        const creditsPerWord = parseInt(document.getElementById('credits_per_word').value);
+        
+        // Update all model costs that don't have specific settings
+        const modelCosts = document.querySelectorAll('.model-cost[data-credits-per-word=""]');
+        modelCosts.forEach(function(element) {
+            element.textContent = (wordCount * creditsPerWord) + ' credits';
+        });
+    }
+    
+    function validateSettings() {
+        const minValue = parseInt(document.getElementById('min_word_count').value);
+        const maxValue = parseInt(document.getElementById('max_word_count').value);
+        const defaultValue = parseInt(document.getElementById('default_word_count').value);
+        const messageDiv = document.getElementById('validationMessage');
+        const saveBtn = document.getElementById('saveBtn');
+        
+        let isValid = true;
+        let messages = [];
+        
+        if (minValue >= maxValue) {
+            messages.push('Maximum word count must be greater than minimum word count.');
+            isValid = false;
+        }
+        
+        if (defaultValue < minValue || defaultValue > maxValue) {
+            messages.push('Default word count must be between minimum and maximum values.');
+            isValid = false;
+        }
+        
+        if (isValid) {
+            messageDiv.innerHTML = '<div class="alert alert-success">Settings are valid</div>';
+            saveBtn.disabled = false;
+        } else {
+            messageDiv.innerHTML = '<div class="alert alert-danger">' + messages.join('<br>') + '</div>';
+            saveBtn.disabled = true;
+        }
+    }
+</script>
+
+<style>
+    .preview-container {
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .slider-preview {
+        margin-bottom: 1.5rem;
+    }
+    
+    .slider-preview input[type="range"] {
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+    
+    .range-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    #current_value {
+        font-weight: bold;
+        color: #7D4BCB;
+    }
+    
+    .credit-cost-preview {
+        background-color: white;
+        border-radius: 0.375rem;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+    }
+    
+    .model-cost-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .model-cost-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    
+    .model-cost {
+        font-weight: bold;
+        color: #7D4BCB;
+    }
+    
+    .validation-message .alert {
+        padding: 0.75rem;
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %} 

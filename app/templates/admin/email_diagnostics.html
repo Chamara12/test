@@ -1,0 +1,163 @@
+{% extends "layout.html" %}
+
+{% block title %}Email Diagnostics - WebArticle Admin{% endblock %}
+
+{% block content %}
+<h2>Email System Diagnostics</h2>
+
+<div class="card">
+    <div class="header-actions">
+        <h3>Diagnostic Results</h3>
+        <div>
+            <a href="{{ url_for('admin.email_settings') }}" class="btn btn-secondary">Back to Settings</a>
+            <a href="{{ url_for('admin.diagnose_email') }}" class="btn btn-primary">Run Again</a>
+        </div>
+    </div>
+    
+    <div class="diagnostics-results">
+        {% for item in diagnostics %}
+            <div class="diagnostic-item {{ item.status }}">
+                <div class="diagnostic-status">
+                    {% if item.status == 'success' %}
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="status-icon">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    {% elif item.status == 'error' %}
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="status-icon">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    {% elif item.status == 'warning' %}
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="status-icon">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    {% else %}
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="status-icon">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    {% endif %}
+                </div>
+                <div class="diagnostic-content">
+                    <h4>{{ item.component }}</h4>
+                    <p>{{ item.message }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <div class="next-steps">
+        <h3>Next Steps</h3>
+        <ul>
+            {% if any(d.status == 'error' for d in diagnostics) %}
+                <li>Fix the errors highlighted above in your email settings</li>
+                <li>Ensure your email provider allows SMTP access</li>
+                <li>Check if your email provider requires special settings</li>
+            {% else %}
+                <li>Your email configuration looks good! Try sending a test email.</li>
+                <li>Make sure to enable email sending in the settings if it's currently disabled.</li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
+<style>
+    .header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .header-actions h3 {
+        margin: 0;
+    }
+    
+    .diagnostics-results {
+        margin-bottom: 1.5rem;
+    }
+    
+    .diagnostic-item {
+        display: flex;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .diagnostic-item.success {
+        background-color: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    
+    .diagnostic-item.error {
+        background-color: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    
+    .diagnostic-item.warning {
+        background-color: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+    
+    .diagnostic-item.info {
+        background-color: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    .diagnostic-status {
+        margin-right: 1rem;
+    }
+    
+    .status-icon {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .diagnostic-item.success .status-icon {
+        color: #10B981;
+    }
+    
+    .diagnostic-item.error .status-icon {
+        color: #EF4444;
+    }
+    
+    .diagnostic-item.warning .status-icon {
+        color: #F59E0B;
+    }
+    
+    .diagnostic-item.info .status-icon {
+        color: #3B82F6;
+    }
+    
+    .diagnostic-content {
+        flex: 1;
+    }
+    
+    .diagnostic-content h4 {
+        margin-top: 0;
+        margin-bottom: 0.25rem;
+    }
+    
+    .diagnostic-content p {
+        margin: 0;
+    }
+    
+    .next-steps {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #E5E7EB;
+    }
+    
+    .next-steps h3 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .next-steps ul {
+        padding-left: 1.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .next-steps li {
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %} 

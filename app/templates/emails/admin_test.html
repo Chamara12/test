@@ -1,0 +1,25 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h2>Email Configuration Test</h2>
+
+<p>Hello Administrator,</p>
+
+<p>This is a test email to confirm that your email configuration for Article Writer Pro is working correctly.</p>
+
+<div class="info-box">
+    <h3 style="margin-top: 0;">Email Configuration Details:</h3>
+    <p><strong>SMTP Server:</strong> {{ settings.smtp_server }}</p>
+    <p><strong>SMTP Port:</strong> {{ settings.smtp_port }}</p>
+    <p><strong>Sender Email:</strong> {{ settings.sender_email }}</p>
+    <p><strong>Authentication Method:</strong> {{ settings.auth_method|default('Username/Password') }}</p>
+    <p><strong>TLS Enabled:</strong> {{ 'Yes' if settings.use_tls else 'No' }}</p>
+</div>
+
+<p>If you received this email, your email configuration is working properly.</p>
+
+<p>This email was sent at: {{ current_time }}</p>
+
+<p>Best regards,<br>
+Article Writer Pro System</p>
+{% endblock %} 

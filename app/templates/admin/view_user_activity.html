@@ -1,0 +1,353 @@
+{% extends "layout.html" %}
+
+{% block title %}User Activity - WebArticle Admin{% endblock %}
+
+{% block content %}
+<h2>User Activity</h2>
+
+<div class="card">
+    <div class="header-actions">
+        <h3>Activity for {{ user.full_name }}</h3>
+        <div>
+            <a href="{{ url_for('admin.manage_users') }}" class="btn btn-secondary">Back to Users</a>
+        </div>
+    </div>
+    
+    <div class="user-summary">
+        <div class="user-avatar">
+            {{ user.full_name|first|upper }}
+        </div>
+        <div class="user-info">
+            <h4>{{ user.full_name }}</h4>
+            <p class="user-email">{{ user.email }}</p>
+            <div class="user-meta">
+                <span>Member since {{ user.created_at.strftime('%B %d, %Y') }}</span>
+                <span class="dot">•</span>
+                <span>Last login: {{ user_stats.last_login|default('Never')|datetime }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="activity-summary">
+        <div class="summary-card">
+            <div class="card-value">{{ user_stats.article_count }}</div>
+            <div class="card-label">Articles Generated</div>
+        </div>
+        
+        <div class="summary-card">
+            <div class="card-value">{{ user_stats.words_generated|intcomma }}</div>
+            <div class="card-label">Words Generated</div>
+        </div>
+        
+        <div class="summary-card">
+            <div class="card-value">{{ user_stats.total_logins }}</div>
+            <div class="card-label">Total Logins</div>
+        </div>
+        
+        <div class="summary-card">
+            <div class="card-value">${{ user_stats.total_spent|default(0)|price }}</div>
+            <div class="card-label">Total Spent</div>
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <button class="tab-button active" onclick="openTab(event, 'articles-tab')">Articles</button>
+        <button class="tab-button" onclick="openTab(event, 'payments-tab')">Payments</button>
+        <button class="tab-button" onclick="openTab(event, 'logins-tab')">Login History</button>
+    </div>
+    
+    <div id="articles-tab" class="tab-content" style="display: block;">
+        {% if articles %}
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Title</th>
+                        <th>Words</th>
+                        <th>Model</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in articles %}
+                    <tr>
+                        <td>{{ article.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ article.title }}</td>
+                        <td>{{ article.credits_cost|intcomma }}</td>
+                        <td>{{ article.model|default("N/A") }}</td>
+                        <td>
+                            <a href="{{ url_for('main.view_article', article_id=article.id) }}" class="btn btn-small">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No articles found for this user.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div id="payments-tab" class="tab-content">
+        {% if payments %}
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Credits</th>
+                        <th>Method</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>${{ '%.2f'|format(payment.amount) }}</td>
+                        <td>{{ payment.credits_added|intcomma }}</td>
+                        <td>{{ payment.payment_method|title }}</td>
+                        <td>
+                            <span class="status-badge {{ payment.status }}">
+                                {{ payment.status|title }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No payment history found for this user.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div id="logins-tab" class="tab-content">
+        {% if login_history %}
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>IP Address</th>
+                        <th>Device</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for login in login_history %}
+                    <tr>
+                        <td>{{ login.login_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ login.ip_address }}</td>
+                        <td>{{ login.device_info }}</td>
+                        <td>
+                            <span class="status-badge {{ 'success' if login.success else 'failed' }}">
+                                {{ 'Success' if login.success else 'Failed' }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No login history found for this user.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .header-actions h3 {
+        margin: 0;
+    }
+    
+    .user-summary {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem;
+        background-color: #F9FAFB;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #7D4BCB;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-right: 1rem;
+    }
+    
+    .user-info {
+        flex: 1;
+    }
+    
+    .user-info h4 {
+        margin: 0 0 0.25rem;
+        font-size: 1.25rem;
+    }
+    
+    .user-email {
+        margin: 0 0 0.5rem;
+        color: #6B7280;
+    }
+    
+    .user-meta {
+        color: #6B7280;
+        font-size: 0.875rem;
+    }
+    
+    .dot {
+        margin: 0 0.5rem;
+    }
+    
+    .activity-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .summary-card {
+        padding: 1rem;
+        background-color: white;
+        border: 1px solid #E5E7EB;
+        border-radius: 0.5rem;
+        text-align: center;
+    }
+    
+    .card-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 0.25rem;
+    }
+    
+    .card-label {
+        font-size: 0.875rem;
+        color: #6B7280;
+    }
+    
+    .tabs {
+        display: flex;
+        border-bottom: 1px solid #E5E7EB;
+        margin-bottom: 1.5rem;
+        overflow-x: auto;
+    }
+    
+    .tab-button {
+        padding: 0.75rem 1.5rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6B7280;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    
+    .tab-button.active {
+        color: #7D4BCB;
+        border-bottom: 2px solid #7D4BCB;
+    }
+    
+    .tab-content {
+        display: none;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        text-align: left;
+        padding: 0.75rem;
+        border-bottom: 1px solid #E5E7EB;
+        font-weight: 500;
+        color: #4B5563;
+    }
+    
+    td {
+        padding: 0.75rem;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .status-badge.success,
+    .status-badge.completed {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: #065F46;
+    }
+    
+    .status-badge.pending {
+        background-color: rgba(245, 158, 11, 0.1);
+        color: #92400E;
+    }
+    
+    .status-badge.failed {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: #991B1B;
+    }
+    
+    .empty-state {
+        padding: 2rem;
+        text-align: center;
+        color: #6B7280;
+    }
+    
+    .btn-small {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        border-radius: 0.25rem;
+    }
+</style>
+
+<script>
+    function openTab(evt, tabName) {
+        const tabContents = document.getElementsByClassName("tab-content");
+        for (let i = 0; i < tabContents.length; i++) {
+            tabContents[i].style.display = "none";
+        }
+        
+        const tabButtons = document.getElementsByClassName("tab-button");
+        for (let i = 0; i < tabButtons.length; i++) {
+            tabButtons[i].className = tabButtons[i].className.replace(" active", "");
+        }
+        
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+</script>
+{% endblock %} 

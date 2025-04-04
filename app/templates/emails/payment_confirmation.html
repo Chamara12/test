@@ -1,0 +1,29 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h2>Payment Confirmation</h2>
+
+<p>Hello {{ user.full_name }},</p>
+
+<p>Thank you for your payment! We've received your payment of <strong>${{ '%.2f'|format(payment.amount) }}</strong> and added <strong>{{ payment.credits_added|intcomma }}</strong> credits to your account.</p>
+
+<div class="info-box">
+    <h3 style="margin-top: 0;">Payment Details:</h3>
+    <p><strong>Transaction ID:</strong> {{ payment.transaction_id }}</p>
+    <p><strong>Date:</strong> {{ payment.completed_at.strftime('%Y-%m-%d %H:%M') }}</p>
+    <p><strong>Payment Method:</strong> {{ payment.payment_method|title }}</p>
+    <p><strong>Amount:</strong> ${{ '%.2f'|format(payment.amount) }}</p>
+    <p><strong>Credits Added:</strong> {{ payment.credits_added|intcomma }}</p>
+</div>
+
+<p>Your current credit balance is now <strong>{{ user_credits|intcomma }}</strong> credits.</p>
+
+<p style="text-align: center;">
+    <a href="{{ url_for('main.credits_dashboard', _external=True) }}" class="btn">View My Credits</a>
+</p>
+
+<p>If you have any questions about this payment or your credits, please don't hesitate to contact our support team.</p>
+
+<p>Best regards,<br>
+The Article Writer Pro Team</p>
+{% endblock %} 

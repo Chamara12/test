@@ -1,0 +1,791 @@
+{% extends "layout.html" %}
+
+{% block title %}Generate Article - Professional Article Writing{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/article-generator-new.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="article-generator-container">
+    <!-- Left Panel: Article Configuration -->
+    <div class="article-config-panel">
+        <div class="panel-header">
+            <div>
+                <h1>Create New Article</h1>
+                <p class="subtitle">Configure your article settings below</p>
+            </div>
+        </div>
+        
+        <form id="articleForm" class="config-form">
+            <!-- Basic Information Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </div>
+                    <h2>Basic Information</h2>
+                </div>
+                
+                <div class="form-group">
+                    <label for="title">Article Title</label>
+                    <input type="text" id="title" name="title" placeholder="Enter a compelling title" required>
+                    <small>A descriptive title improves SEO and reader engagement</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="keywords">Keywords</label>
+                    <div class="input-with-icon">
+                        <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                        </svg>
+                        <input type="text" id="keywords" name="keywords" placeholder="marketing, content, strategy" required>
+                    </div>
+                    <small>Separate keywords with commas for better targeting</small>
+                </div>
+            </div>
+            
+            <!-- SEO Optimization Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                    </div>
+                    <h2>SEO Optimization</h2>
+                </div>
+                
+                <div class="form-group">
+                    <label for="seo_template">SEO Template</label>
+                    <div class="select-wrapper">
+                        <select id="seo_template" name="seo_template">
+                            <option value="default" selected>Default Template</option>
+                            {% for template in templates %}
+                                <option value="{{ template.id }}" data-seo-level="{{ template.seo_level }}">
+                                    {{ template.name }} ({{ template.seo_level }} SEO)
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <small id="templateDescription" class="form-text">
+                        {{ templates[0].description if templates else "Standard SEO optimization for article generation" }}
+                    </small>
+                </div>
+                
+                <div class="seo-options">
+                    <label class="options-label">SEO Elements</label>
+                    <div class="toggle-options">
+                        <div class="toggle-option">
+                            <label class="toggle" for="include_meta">
+                                <input type="checkbox" id="include_meta" name="include_meta" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <div class="toggle-label">
+                                <span>Meta Description</span>
+                                <small>Improves search visibility</small>
+                            </div>
+                        </div>
+                        
+                        <div class="toggle-option">
+                            <label class="toggle" for="include_headings">
+                                <input type="checkbox" id="include_headings" name="include_headings" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <div class="toggle-label">
+                                <span>Optimize Headings</span>
+                                <small>Better content structure</small>
+                            </div>
+                        </div>
+                        
+                        <div class="toggle-option">
+                            <label class="toggle" for="include_faq">
+                                <input type="checkbox" id="include_faq" name="include_faq">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <div class="toggle-label">
+                                <span>FAQ Section</span>
+                                <small>Enhances search rankings</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content Settings Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                    <h2>Content Settings</h2>
+                </div>
+                
+                <div class="form-group">
+                    <label for="word_count">Word Count</label>
+                    <div class="word-count-slider">
+                        <input type="range" id="word_count_slider" 
+                               min="{{ min_words }}" max="{{ max_words }}" value="{{ default_words }}">
+                        <div class="word-count-display">
+                            <input type="number" id="word_count" name="word_count" 
+                                   min="{{ min_words }}" max="{{ max_words }}" value="{{ default_words }}">
+                            <span class="word-count-unit">words</span>
+                        </div>
+                    </div>
+                    <div class="range-info">
+                        <small>{{ min_words }}</small>
+                        <small>{{ max_words }}</small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="model">AI Model</label>
+                    <div class="model-selection">
+                        {% for model in models %}
+                            <div class="model-option{% if model.is_default %} selected{% endif %}">
+                                <input type="radio" id="model_{{ model.id }}" name="model" value="{{ model.id }}" 
+                                       data-credits-per-word="{{ model.credits_per_word }}"
+                                       {% if model.is_default %}checked{% endif %}
+                                       onchange="updateCostEstimate()">
+                                <label for="model_{{ model.id }}">
+                                    <div class="model-name">{{ model.display_name }}</div>
+                                    <div class="model-info">{{ model.credits_per_word }} credits per word</div>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Credit Information & Generate Button -->
+            <div class="form-section credit-section">
+                <div class="credit-info-container">
+                    <div class="credit-balance">
+                        <div class="balance-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="16"></line>
+                                <line x1="8" y1="12" x2="16" y2="12"></line>
+                            </svg>
+                        </div>
+                        <div class="balance-details">
+                            <span class="balance-label">Your Credit Balance</span>
+                            <span class="balance-value">{{ credits_balance|default(0)|intcomma }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cost-estimate">
+                        <div class="cost-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="1" x2="12" y2="23"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                        </div>
+                        <div class="cost-details">
+                            <span class="cost-label">Estimated Cost</span>
+                            <span class="cost-value" id="costValue">{{ default_words * models[0].credits_per_word }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if credits_balance < min_words %}
+                <div class="credit-warning">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <p>You don't have enough credits to generate an article. <a href="{{ url_for('main.credits_dashboard') }}">Purchase more credits</a></p>
+                </div>
+                {% endif %}
+                
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('main.dashboard') }}';">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="generateBtn" {% if credits_balance < min_words %}disabled{% endif %}>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14"></path>
+                            <path d="M12 5l7 7-7 7"></path>
+                        </svg>
+                        Generate Article
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Right Panel: Article Preview -->
+    <div class="article-preview-panel" id="articlePreview">
+        <div class="panel-header">
+            <div>
+                <h1>Article Preview</h1>
+                <p class="subtitle">Your generated content will appear here</p>
+            </div>
+            <div class="preview-actions">
+                <button class="btn btn-secondary btn-icon" id="expandPreviewBtn" title="Expand Preview">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 3h6v6"></path>
+                        <path d="M9 21H3v-6"></path>
+                        <path d="M21 3l-7 7"></path>
+                        <path d="M3 21l7-7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <div id="generationStatus" class="generation-status">
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                </div>
+                <h3>Ready to Generate</h3>
+                <p>Configure your article settings and click the Generate button to create your content.</p>
+            </div>
+        </div>
+        
+        <div id="articleContent" class="article-content"></div>
+        
+        <div class="article-actions" style="display: none;" id="articleActions">
+            <button id="regenerateBtn" class="btn-outline">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6"></path>
+                    <path d="M2.5 12.5v-6h6"></path>
+                    <path d="M2.5 12.5a9 9 0 0 0 15 6.5"></path>
+                    <path d="M21.5 8a9 9 0 0 0-15-6.5"></path>
+                </svg>
+                Regenerate
+            </button>
+            <button id="copyArticleBtn" class="btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Copy to Clipboard
+            </button>
+            <button id="saveArticleBtn" class="btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                Save Article
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCostEstimate();
+        setupWordCountSlider();
+    });
+    
+    function updateCostEstimate() {
+        const wordCount = parseInt(document.getElementById('word_count').value);
+        const modelInputs = document.querySelectorAll('input[name="model"]');
+        let selectedModel;
+        
+        // Find the selected model
+        for (const input of modelInputs) {
+            if (input.checked) {
+                selectedModel = input;
+                break;
+            }
+        }
+        
+        // If no model is selected, return early
+        if (!selectedModel) {
+            console.error('No model selected');
+            return;
+        }
+        
+        const creditsPerWord = parseInt(selectedModel.getAttribute('data-credits-per-word'));
+        
+        // Validate word count is within range
+        const minWords = parseInt('{{ min_words }}');
+        const maxWords = parseInt('{{ max_words }}');
+        
+        if (wordCount < minWords) {
+            document.getElementById('word_count').value = minWords;
+            updateCostEstimate();
+            return;
+        } else if (wordCount > maxWords) {
+            document.getElementById('word_count').value = maxWords;
+            updateCostEstimate();
+            return;
+        }
+        
+        const totalCost = wordCount * creditsPerWord;
+        document.getElementById('costValue').textContent = totalCost;
+        
+        // Check if user has enough credits
+        const creditsBalance = parseInt("{{ credits_balance|default(0) }}");
+        const generateBtn = document.getElementById('generateBtn');
+        
+        if (creditsBalance < totalCost) {
+            generateBtn.disabled = true;
+            generateBtn.title = 'Not enough credits';
+        } else {
+            generateBtn.disabled = false;
+            generateBtn.title = '';
+        }
+    }
+    
+    document.getElementById('articleForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Reset article display
+        document.getElementById('articleContent').innerHTML = '';
+        document.getElementById('generationStatus').innerHTML = 
+            '<div class="chatgpt-dots"><div></div><div></div><div></div></div>';
+        document.getElementById('generationStatus').style.display = 'block';
+        document.getElementById('articleActions').style.display = 'none';
+        
+        // Disable form submission
+        document.getElementById('generateBtn').disabled = true;
+        
+        // Get form data
+        const title = document.getElementById('title').value;
+        const keywords = document.getElementById('keywords').value;
+        const wordCount = document.getElementById('word_count').value;
+        
+        // Get selected model
+        let model = '';
+        const modelInputs = document.querySelectorAll('input[name="model"]');
+        for (const input of modelInputs) {
+            if (input.checked) {
+                model = input.value;
+                break;
+            }
+        }
+        
+        const templateId = document.getElementById('seo_template').value;
+        
+        // Get SEO options
+        const includeMetaChecked = document.getElementById('include_meta').checked;
+        const includeHeadingsChecked = document.getElementById('include_headings').checked;
+        const includeFaqChecked = document.getElementById('include_faq').checked;
+        
+        // Create streaming request with SEO parameters
+        generateArticleStream(
+            title, 
+            keywords, 
+            wordCount, 
+            model, 
+            templateId,
+            includeMetaChecked,
+            includeHeadingsChecked,
+            includeFaqChecked
+        );
+    });
+    
+    // Function for streaming article generation with SEO options
+    function generateArticleStream(title, keywords, wordCount, model, templateId, includeMeta, includeHeadings, includeFaq) {
+        const contentDiv = document.getElementById('articleContent');
+        contentDiv.innerHTML = '';
+        
+        // Show loading indicator
+        document.getElementById('generationStatus').innerHTML = 
+            `<p>Generating article with topic: <strong>${title}</strong></p>
+             <div class="chatgpt-dots"><div></div><div></div><div></div></div>`;
+        
+        // Create SSE connection with all parameters
+        const eventSource = new EventSource(
+            `/stream-article?title=${encodeURIComponent(title)}`
+            + `&keywords=${encodeURIComponent(keywords)}`
+            + `&word_count=${wordCount}`
+            + `&model=${encodeURIComponent(model)}`
+            + `&template=${encodeURIComponent(templateId)}`
+            + `&include_meta=${includeMeta}`
+            + `&include_headings=${includeHeadings}`
+            + `&include_faq=${includeFaq}`
+        );
+        
+        let articleId = null;
+        let fullContent = '';
+        
+        // Event handlers
+        eventSource.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            
+            if (data.type === 'content') {
+                // Remove loading indicator on first content
+                if (fullContent === '') {
+                    document.getElementById('generationStatus').style.display = 'none';
+                }
+                
+                // Append new content
+                const newContent = data.content;
+                fullContent += newContent;
+                
+                // Format content on-the-fly
+                contentDiv.innerHTML = processContentToHTML({ innerHTML: fullContent });
+                contentDiv.scrollTop = contentDiv.scrollHeight;
+            }
+            else if (data.type === 'complete') {
+                // Get article ID and finish
+                articleId = data.article_id;
+                eventSource.close();
+                
+                // Show action buttons
+                document.getElementById('articleActions').style.display = 'flex';
+                document.getElementById('generateBtn').disabled = false;
+                
+                // Set up action buttons
+                document.getElementById('saveArticleBtn').onclick = function() {
+                    window.location.href = `/article/${articleId}`;
+                };
+                
+                document.getElementById('copyArticleBtn').onclick = function() {
+                    navigator.clipboard.writeText(contentDiv.innerText).then(() => {
+                        alert('Article copied to clipboard!');
+                    }).catch(err => {
+                        console.error('Error copying text: ', err);
+                    });
+                };
+                
+                document.getElementById('regenerateBtn').onclick = function() {
+                    document.getElementById('articleForm').dispatchEvent(new Event('submit'));
+                };
+            }
+            else if (data.type === 'error') {
+                document.getElementById('generationStatus').innerHTML = 
+                    `<p class="error-message">Error: ${data.error}</p>`;
+                document.getElementById('generateBtn').disabled = false;
+                eventSource.close();
+            }
+        };
+        
+        eventSource.onerror = function(event) {
+            document.getElementById('generationStatus').innerHTML = 
+                `<p class="error-message">Connection error. Please try again.</p>`;
+            document.getElementById('generateBtn').disabled = false;
+            eventSource.close();
+        };
+    }
+    
+    // Helper function to process content into proper HTML
+    function processContentToHTML(container) {
+        let content = container.innerHTML || container.textContent;
+        
+        // Simple formatting for headings and paragraphs
+        content = content.replace(/\n\s*\n/g, '\n\n');  // Normalize line breaks
+        
+        // Format paragraphs while preserving HTML
+        let formattedContent = '';
+        let currentParagraph = '';
+        let inHtmlTag = false;
+        
+        // If already contains HTML tags like <h1>, <p>, etc.
+        if (/<\/?[a-z][\s\S]*>/i.test(content)) {
+            return content; // Already has HTML formatting
+        }
+        
+        // Process content line by line
+        const lines = content.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            
+            // Skip empty lines
+            if (!line) {
+                // If we have content in the current paragraph, close it
+                if (currentParagraph) {
+                    formattedContent += `<p>${currentParagraph}</p>`;
+                    currentParagraph = '';
+                }
+                continue;
+            }
+            
+            // Check if this line looks like a heading (short, no punctuation at end)
+            const isHeading = line.length < 100 && 
+                             !line.endsWith('.') && 
+                             !line.endsWith('!') && 
+                             !line.endsWith('?') &&
+                             !line.endsWith(':') &&
+                             i > 0;
+            
+            // If we have a heading and there's content in current paragraph, close it
+            if (isHeading && currentParagraph) {
+                formattedContent += `<p>${currentParagraph}</p>`;
+                currentParagraph = '';
+            }
+            
+            // Add the line to formatted content
+            if (isHeading) {
+                formattedContent += `<h2>${line}</h2>`;
+            } else {
+                // If current paragraph is empty and this is the first para, it might be a title
+                if (!currentParagraph && formattedContent === '' && line.length < 100) {
+                    formattedContent += `<h1>${line}</h1>`;
+                } else {
+                    // Add to current paragraph with space
+                    if (currentParagraph) currentParagraph += ' ';
+                    currentParagraph += line;
+                }
+            }
+        }
+        
+        // Add any remaining paragraph content
+        if (currentParagraph) {
+            formattedContent += `<p>${currentParagraph}</p>`;
+        }
+        
+        return formattedContent || `<p>${content}</p>`;
+    }
+    
+    // Add event listener to update template description when selecting templates
+    document.getElementById('seo_template').addEventListener('change', function() {
+        const templateSelect = this;
+        const selectedOption = templateSelect.options[templateSelect.selectedIndex];
+        const templateDescription = document.getElementById('templateDescription');
+        
+        if (selectedOption.getAttribute('data-description')) {
+            templateDescription.textContent = selectedOption.getAttribute('data-description');
+        } else if (selectedOption.value === 'default') {
+            templateDescription.textContent = "Standard SEO optimization for article generation";
+        } else {
+            templateDescription.textContent = `${selectedOption.text} template`;
+        }
+        
+        // Update SEO level visual indicator if available
+        const seoLevel = selectedOption.getAttribute('data-seo-level');
+        if (seoLevel) {
+            // You could highlight different SEO options based on the level
+            document.querySelectorAll('.toggle-options .toggle-option').forEach(item => {
+                if (seoLevel === 'high') {
+                    // For high SEO level, check all options
+                    item.querySelector('input').checked = true;
+                } else if (seoLevel === 'low') {
+                    // For low SEO level, only check headings by default
+                    const inputId = item.querySelector('input').id;
+                    item.querySelector('input').checked = (inputId === 'include_headings');
+                }
+            });
+        }
+    });
+    
+    // Setup word count slider and input synchronization
+    function setupWordCountSlider() {
+        const slider = document.getElementById('word_count_slider');
+        const input = document.getElementById('word_count');
+        
+        // Update input when slider changes
+        function updateWordCount() {
+            input.value = slider.value;
+            updateCostEstimate();
+        }
+        
+        // Update slider when input changes
+        function updateSlider() {
+            slider.value = input.value;
+            updateCostEstimate();
+        }
+        
+        // Add event listeners
+        slider.addEventListener('input', updateWordCount);
+        input.addEventListener('input', updateSlider);
+    }
+    
+    // Add event listeners for model selection
+    document.querySelectorAll('.model-option').forEach(option => {
+        const radio = option.querySelector('input[type="radio"]');
+        option.addEventListener('click', function() {
+            // Remove selected class from all options
+            document.querySelectorAll('.model-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            option.classList.add('selected');
+            
+            // Check the radio button
+            radio.checked = true;
+            
+            // Update cost estimate
+            updateCostEstimate();
+        });
+    });
+</script>
+
+<style>
+    .generation-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .generation-container {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .generation-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .article-preview {
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        max-height: 800px;
+        overflow-y: auto;
+    }
+    
+    .article-content {
+        min-height: 200px;
+        line-height: 1.6;
+    }
+    
+    .article-content h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+    }
+    
+    .article-content h2 {
+        font-size: 1.5rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .article-content p {
+        margin-bottom: 1rem;
+    }
+    
+    .generation-status {
+        padding: 1rem;
+        background-color: #f9f9f9;
+        border-radius: 0.375rem;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: center;
+    }
+    
+    /* ChatGPT style loading dots */
+    .chatgpt-dots {
+        display: flex;
+        align-items: center;
+        column-gap: 5px;
+    }
+    
+    .chatgpt-dots div {
+        width: 4px;
+        height: 4px;
+        background-color: #6b7280;
+        border-radius: 50%;
+        animation: chatgpt-bounce 1.5s infinite;
+    }
+    
+    .chatgpt-dots div:nth-child(1) {
+        animation-delay: 0s;
+    }
+    
+    .chatgpt-dots div:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+    
+    .chatgpt-dots div:nth-child(3) {
+        animation-delay: 0.2s;
+    }
+    
+    @keyframes chatgpt-bounce {
+        0%, 100% {
+            transform: translateY(0);
+            background-color: #d1d5db;
+        }
+        50% {
+            transform: translateY(-5px);
+            background-color: #6b7280;
+        }
+    }
+    
+    .article-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+        justify-content: flex-end;
+    }
+    
+    .success-message {
+        color: #28a745;
+        font-weight: bold;
+    }
+    
+    .error-message {
+        color: #dc3545;
+        font-weight: bold;
+    }
+    
+    .range-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+        color: #6B7280;
+    }
+    
+    .credit-info {
+        margin: 1rem 0;
+        padding: 0.75rem;
+        background-color: rgba(125, 75, 203, 0.1);
+        border-radius: 0.375rem;
+    }
+    
+    .btn-outline {
+        background-color: transparent;
+        border: 1px solid #7D4BCB;
+        color: #7D4BCB;
+    }
+    
+    .btn-outline:hover {
+        background-color: rgba(125, 75, 203, 0.1);
+    }
+    
+    .word-count-input {
+        margin-bottom: 0.5rem;
+    }
+    
+    .word-count-input input[type="number"] {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        font-size: 1rem;
+    }
+    
+    .range-info {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.25rem;
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %} 

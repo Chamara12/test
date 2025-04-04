@@ -1,0 +1,208 @@
+{% extends "layout.html" %}
+
+{% block title %}Register - Article Writing Website{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h2>Create an Account</h2>
+        
+        <form id="registerForm" action="{{ url_for('auth.register') }}" method="post" class="auth-form">
+            <div class="form-group">
+                <label for="full_name">Full Name</label>
+                <input type="text" id="full_name" name="full_name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required>
+                <small>You'll need to verify this email address</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required minlength="8">
+                <small>Must be at least 8 characters long</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" required minlength="8">
+            </div>
+            
+            <div class="form-info">
+                <p>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="info-icon">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd" />
+                    </svg>
+                    After registration, you'll receive a verification code via email.
+                </p>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Register</button>
+            </div>
+            
+            <input type="hidden" id="device_fingerprint" name="device_fingerprint" value="">
+        </form>
+        
+        <div class="auth-links">
+            <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .auth-container {
+        max-width: 480px;
+        margin: 2rem auto;
+    }
+    
+    .auth-card {
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+    }
+    
+    .auth-card h2 {
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        color: #1F2937;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #4B5563;
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 0.625rem;
+        border: 1px solid #D1D5DB;
+        border-radius: 0.375rem;
+        font-size: 1rem;
+    }
+    
+    .form-group small {
+        display: block;
+        margin-top: 0.25rem;
+        color: #6B7280;
+        font-size: 0.875rem;
+    }
+    
+    .form-info {
+        background-color: rgba(59, 130, 246, 0.1);
+        padding: 0.75rem;
+        border-radius: 0.375rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-info p {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        color: #1E3A8A;
+        font-size: 0.875rem;
+    }
+    
+    .info-icon {
+        width: 1rem;
+        height: 1rem;
+        margin-right: 0.5rem;
+        color: #3B82F6;
+    }
+    
+    .form-actions {
+        text-align: center;
+    }
+    
+    .btn-primary {
+        background-color: #7D4BCB;
+        color: white;
+        padding: 0.625rem 1.25rem;
+        border: none;
+        border-radius: 0.375rem;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .btn-primary:hover {
+        background-color: #6B34B8;
+    }
+    
+    .auth-links {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: #6B7280;
+        font-size: 0.875rem;
+    }
+    
+    .auth-links a {
+        color: #7D4BCB;
+        text-decoration: none;
+    }
+    
+    .auth-links a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<script>
+    // Add password confirmation validation
+    document.querySelector('#registerForm').addEventListener('submit', function(e) {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match. Please try again.');
+        }
+    });
+
+    // Device fingerprinting script
+    (function() {
+        function getFingerprint() {
+            const fingerprint = {
+                screen: {
+                    width: window.screen.width,
+                    height: window.screen.height,
+                    availWidth: window.screen.availWidth,
+                    availHeight: window.screen.availHeight,
+                    colorDepth: window.screen.colorDepth,
+                    pixelDepth: window.screen.pixelDepth
+                },
+                navigator: {
+                    language: navigator.language,
+                    languages: navigator.languages,
+                    userAgent: navigator.userAgent,
+                    platform: navigator.platform,
+                    vendor: navigator.vendor,
+                    cookieEnabled: navigator.cookieEnabled,
+                    doNotTrack: navigator.doNotTrack,
+                    hardwareConcurrency: navigator.hardwareConcurrency,
+                    deviceMemory: navigator.deviceMemory
+                },
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                timezoneOffset: new Date().getTimezoneOffset()
+            };
+            
+            return JSON.stringify(fingerprint);
+        }
+        
+        // Set fingerprint when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('device_fingerprint').value = getFingerprint();
+        });
+    })();
+</script>
+{% endblock %} 

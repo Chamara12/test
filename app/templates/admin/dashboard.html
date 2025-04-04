@@ -1,0 +1,238 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Dashboard - Article Writing Website{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <div class="welcome-message">
+            <h1>Admin Dashboard</h1>
+            <p class="subtitle">System overview and management</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-container">
+        <div class="stat-card primary">
+            <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3>Total Users</h3>
+                <p class="stat-value">{{ user_count }}</p>
+                <a href="{{ url_for('admin.manage_users') }}" class="stat-link">Manage Users</a>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3>Total Articles</h3>
+                <p class="stat-value">{{ article_count }}</p>
+                <a href="{{ url_for('admin.manage_content') }}" class="stat-link">Manage Articles</a>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3>Total Revenue</h3>
+                <p class="stat-value">${{ '%.2f'|format(total_revenue|default(0)) }}</p>
+                <a href="{{ url_for('admin.transactions') }}" class="stat-link">View Transactions</a>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 6v6l4 2"></path>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3>Total Credits Purchased</h3>
+                <p class="stat-value">{{ total_purchased|default(0)|intcomma }}</p>
+                <a href="{{ url_for('admin.credit_settings') }}" class="stat-link">Credit Settings</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status Card -->
+    <div class="content-card">
+        <div class="card-header">
+            <h2>System Status</h2>
+        </div>
+        <div class="system-status-grid">
+            <div class="status-item">
+                <div class="status-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                </div>
+                <div class="status-content">
+                    <h3>Article Auto-Delete</h3>
+                    <p>{{ article_auto_delete_days }} days</p>
+                    {% if articles_due_for_deletion > 0 %}
+                    <div class="status-alert">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        {{ articles_due_for_deletion }} articles due for deletion soon
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="status-item">
+                <div class="status-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                        <line x1="1" y1="10" x2="23" y2="10"></line>
+                    </svg>
+                </div>
+                <div class="status-content">
+                    <h3>Payment Gateways</h3>
+                    <div class="gateway-list">
+                        <div class="gateway-item">
+                            <div class="gateway-status active"></div>
+                            <span>Stripe</span>
+                        </div>
+                        <div class="gateway-item">
+                            <div class="gateway-status active"></div>
+                            <span>PayPal</span>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('admin.payment_settings') }}" class="status-link">Configure Payment</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Controls -->
+    <div class="content-card">
+        <div class="card-header">
+            <h2>Admin Controls</h2>
+        </div>
+        <div class="admin-controls">
+            <a href="{{ url_for('admin.manage_users') }}" class="control-card">
+                <div class="control-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </div>
+                <h3>Manage Users</h3>
+            </a>
+
+            <a href="{{ url_for('admin.manage_content') }}" class="control-card">
+                <div class="control-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                </div>
+                <h3>Manage Articles</h3>
+            </a>
+
+            <a href="{{ url_for('admin.manage_api_key') }}" class="control-card">
+                <div class="control-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                    </svg>
+                </div>
+                <h3>Manage X.AI API Key</h3>
+            </a>
+
+            <a href="{{ url_for('admin.word_count_settings') }}" class="control-card">
+                <div class="control-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                        <line x1="9" y1="20" x2="15" y2="20"></line>
+                        <line x1="12" y1="4" x2="12" y2="20"></line>
+                    </svg>
+                </div>
+                <h3>Word Count Settings</h3>
+            </a>
+
+            <a href="{{ url_for('admin.manage_models') }}" class="control-card">
+                <div class="control-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                        <path d="M2 17l10 5 10-5"></path>
+                        <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                </div>
+                <h3>Manage X.AI Models</h3>
+            </a>
+
+            <a href="{{ url_for('admin.credit_settings') }}" class="control-card">
+                <div class="control-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="16"></line>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                </div>
+                <h3>Credit Settings</h3>
+            </a>
+
+            <a href="{{ url_for('admin.email_settings') }}" class="control-card">
+                <div class="control-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                </div>
+                <h3>Email Settings</h3>
+            </a>
+        </div>
+    </div>
+
+    {% if config.get('DEV_MODE', False) %}
+    <div class="content-card dev-mode-card">
+        <div class="card-header">
+            <h2>Development Tools</h2>
+        </div>
+        <div class="admin-controls">
+            <a href="{{ url_for('admin.otp_debug') }}" class="control-card dev-card">
+                <div class="control-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 18 22 12 16 6"></polyline>
+                        <polyline points="8 6 2 12 8 18"></polyline>
+                    </svg>
+                </div>
+                <h3>OTP Debug Console</h3>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

@@ -1,0 +1,241 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">Payment Gateway Settings</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="mb-4 p-4 rounded-md {{ 'bg-green-100 text-green-700' if category == 'success' else 'bg-red-100 text-red-700' }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <div class="info-box bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+        <p class="text-blue-700">Configure your payment gateway settings below. Enable the gateways you want to use for processing payments.</p>
+    </div>
+    
+    <div class="payment-gateways mb-8">
+        <div class="bg-white shadow rounded-md overflow-hidden mb-6">
+            <div class="gateway-tabs border-b border-gray-200">
+                <div class="flex">
+                    <button class="gateway-tab active py-4 px-6 text-center font-medium text-purple-600 bg-white border-b-2 border-purple-600" data-target="stripe-settings">
+                        <i class="fab fa-stripe mr-2"></i> Stripe
+                    </button>
+                    <button class="gateway-tab py-4 px-6 text-center font-medium text-gray-500 hover:text-gray-700" data-target="paypal-settings">
+                        <i class="fab fa-paypal mr-2"></i> PayPal
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Stripe Settings -->
+            <div id="stripe-settings" class="gateway-content p-6">
+                <form method="POST" action="{{ url_for('admin.save_payment_settings') }}">
+                    <input type="hidden" name="gateway" value="stripe">
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            <span>Enable Stripe</span>
+                            <div class="relative inline-block w-12 ml-2 align-middle select-none">
+                                <input type="checkbox" name="is_enabled" id="stripe-enabled" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" {{ 'checked' if gateways.stripe.is_enabled else '' }}>
+                                <label for="stripe-enabled" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            <span>Test Mode</span>
+                            <div class="relative inline-block w-12 ml-2 align-middle select-none">
+                                <input type="checkbox" name="test_mode" id="stripe-test-mode" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" {{ 'checked' if gateways.stripe.test_mode else '' }}>
+                                <label for="stripe-test-mode" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                        </label>
+                        <p class="text-sm text-gray-500 mt-1">Enable test mode to use Stripe's sandbox environment</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="stripe-api-key">
+                            API Key
+                        </label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="stripe-api-key" name="api_key" type="text" value="{{ gateways.stripe.api_key }}">
+                        <p class="text-sm text-gray-500 mt-1">Your Stripe publishable key</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="stripe-api-secret">
+                            API Secret
+                        </label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="stripe-api-secret" name="api_secret" type="password" value="{{ gateways.stripe.api_secret }}">
+                        <p class="text-sm text-gray-500 mt-1">Your Stripe secret key</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="stripe-webhook-secret">
+                            Webhook Secret
+                        </label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="stripe-webhook-secret" name="webhook_secret" type="password" value="{{ gateways.stripe.webhook_secret }}">
+                        <p class="text-sm text-gray-500 mt-1">Your Stripe webhook signing secret</p>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Save Stripe Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- PayPal Settings -->
+            <div id="paypal-settings" class="gateway-content p-6 hidden">
+                <form method="POST" action="{{ url_for('admin.save_payment_settings') }}">
+                    <input type="hidden" name="gateway" value="paypal">
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            <span>Enable PayPal</span>
+                            <div class="relative inline-block w-12 ml-2 align-middle select-none">
+                                <input type="checkbox" name="is_enabled" id="paypal-enabled" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" {{ 'checked' if gateways.paypal.is_enabled else '' }}>
+                                <label for="paypal-enabled" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            <span>Test Mode</span>
+                            <div class="relative inline-block w-12 ml-2 align-middle select-none">
+                                <input type="checkbox" name="test_mode" id="paypal-test-mode" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" {{ 'checked' if gateways.paypal.test_mode else '' }}>
+                                <label for="paypal-test-mode" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                        </label>
+                        <p class="text-sm text-gray-500 mt-1">Enable test mode to use PayPal's sandbox environment</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="paypal-api-key">
+                            Client ID
+                        </label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="paypal-api-key" name="api_key" type="text" value="{{ gateways.paypal.api_key }}">
+                        <p class="text-sm text-gray-500 mt-1">Your PayPal Client ID</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="paypal-api-secret">
+                            Client Secret
+                        </label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="paypal-api-secret" name="api_secret" type="password" value="{{ gateways.paypal.api_secret }}">
+                        <p class="text-sm text-gray-500 mt-1">Your PayPal Client Secret</p>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Save PayPal Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white shadow rounded-md overflow-hidden mb-6 p-6">
+        <h2 class="text-xl font-bold mb-4">Payment Statistics</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="stat-card bg-purple-50 p-4 rounded-md">
+                <h3 class="text-purple-700 text-sm font-medium">Total Revenue</h3>
+                <p class="text-2xl font-bold">${{ total_revenue|price }}</p>
+            </div>
+            
+            <div class="stat-card bg-blue-50 p-4 rounded-md">
+                <h3 class="text-blue-700 text-sm font-medium">Transactions</h3>
+                <p class="text-2xl font-bold">{{ transaction_count }}</p>
+            </div>
+            
+            <div class="stat-card bg-green-50 p-4 rounded-md">
+                <h3 class="text-green-700 text-sm font-medium">Success Rate</h3>
+                <p class="text-2xl font-bold">{{ success_rate }}%</p>
+            </div>
+        </div>
+        
+        <h3 class="text-lg font-semibold mb-2">Recent Transactions</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gateway</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for payment in recent_payments %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ payment.id }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ payment.user_name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ payment.amount|price }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ payment.payment_method }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {{ 'bg-green-100 text-green-800' if payment.status == 'completed' else 
+                                'bg-yellow-100 text-yellow-800' if payment.status == 'pending' else 
+                                'bg-red-100 text-red-800' }}">
+                                {{ payment.status }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ payment.created_at|datetime }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .toggle-checkbox:checked {
+        right: 0;
+        border-color: #7D4BCB;
+    }
+    .toggle-checkbox:checked + .toggle-label {
+        background-color: #7D4BCB;
+    }
+    .gateway-tab.active {
+        border-bottom-width: 2px;
+        border-color: #7D4BCB;
+        color: #7D4BCB;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gateway tabs functionality
+        const tabs = document.querySelectorAll('.gateway-tab');
+        const contents = document.querySelectorAll('.gateway-content');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs
+                tabs.forEach(t => t.classList.remove('active', 'text-purple-600', 'border-b-2', 'border-purple-600'));
+                tabs.forEach(t => t.classList.add('text-gray-500'));
+                
+                // Add active class to clicked tab
+                tab.classList.add('active', 'text-purple-600', 'border-b-2', 'border-purple-600');
+                tab.classList.remove('text-gray-500');
+                
+                // Hide all content
+                contents.forEach(content => content.classList.add('hidden'));
+                
+                // Show content corresponding to clicked tab
+                const targetId = tab.getAttribute('data-target');
+                document.getElementById(targetId).classList.remove('hidden');
+            });
+        });
+    });
+</script>
+{% endblock %} 

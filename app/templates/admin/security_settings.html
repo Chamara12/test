@@ -1,0 +1,137 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+<div class="admin-container">
+    <h2>Security Settings</h2>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>Anti-Fraud Controls</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.security_settings') }}">
+                <div class="form-group">
+                    <label class="switch">
+                        <input type="checkbox" name="enable_device_tracking" 
+                               {% if device_tracking_enabled %}checked{% endif %}>
+                        <span class="slider round"></span>
+                    </label>
+                    <label>Enable Device & IP Tracking</label>
+                    <p class="form-text text-muted">
+                        When enabled, the system will track device information and IP addresses to prevent multiple account creation for free credits.
+                    </p>
+                </div>
+                
+                <div class="form-group">
+                    <label class="switch">
+                        <input type="checkbox" name="remove_free_credits_on_duplicate" 
+                               {% if remove_credits_enabled %}checked{% endif %}
+                               {% if not device_tracking_enabled %}disabled{% endif %}>
+                        <span class="slider round"></span>
+                    </label>
+                    <label>Remove Free Credits on Duplicate Login</label>
+                    <p class="form-text text-muted">
+                        When enabled, free credits will be removed if a user logs in from a device or IP that was previously used to create another account.
+                    </p>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header">
+            <h3>Fraud Detection Statistics</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <h4>{{ stats.duplicate_devices }}</h4>
+                        <p>Duplicate Devices Detected</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <h4>{{ stats.removed_awards }}</h4>
+                        <p>Free Credit Awards Removed</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <h4>{{ stats.total_removed|default(0) }}</h4>
+                        <p>Total Credits Removed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header">
+            <h3>Duplicate Devices Log</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Device Hash</th>
+                            <th>IP Address</th>
+                            <th>User Count</th>
+                            <th>First Seen</th>
+                            <th>Last Seen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="duplicate-devices">
+                        <tr>
+                            <td colspan="5" class="text-center">
+                                <button id="load-duplicates" class="btn btn-sm btn-primary">
+                                    Load Duplicate Devices
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Script to load duplicate devices on demand
+document.getElementById('load-duplicates').addEventListener('click', function() {
+    fetch('/admin/api/duplicate-devices')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('duplicate-devices');
+            tbody.innerHTML = '';
+            
+            if (data.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="5" class="text-center">No duplicate devices found</td>';
+                tbody.appendChild(row);
+                return;
+            }
+            
+            data.forEach(device => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${device.device_hash.substring(0, 10)}...</td>
+                    <td>${device.ip_address}</td>
+                    <td>${device.user_count}</td>
+                    <td>${device.first_seen}</td>
+                    <td>${device.last_seen}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading duplicate devices:', error);
+            const tbody = document.getElementById('duplicate-devices');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading data</td></tr>';
+        });
+});
+</script>
+{% endblock %} 

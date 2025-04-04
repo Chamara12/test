@@ -1,0 +1,29 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h2>Your Credit Balance is Running Low</h2>
+
+<p>Hello {{ user.full_name }},</p>
+
+<p>We wanted to let you know that your credit balance on Article Writer Pro is running low. You currently have <strong>{{ user_credits|intcomma }}</strong> credits remaining.</p>
+
+<div class="info-box" style="border-left-color: #ed8936;">
+    <p>To ensure uninterrupted access to our article generation services, we recommend topping up your credits soon.</p>
+</div>
+
+<p style="text-align: center;">
+    <a href="{{ url_for('main.credits_dashboard', _external=True) }}" class="btn">Add More Credits</a>
+</p>
+
+<p>With our current pricing, you can get:</p>
+<ul>
+    <p>5,000 credits for $1 USD</p>
+    <p>50,000 credits for $10 USD</p>
+    <p>250,000 credits for $50 USD</p>
+</ul>
+
+<p>Remember, adding more credits now means you can continue generating high-quality articles without interruption.</p>
+
+<p>Best regards,<br>
+The Article Writer Pro Team</p>
+{% endblock %} 

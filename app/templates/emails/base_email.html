@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .email-header {
+            background-color: #6b46c1;
+            padding: 20px 30px;
+            text-align: center;
+        }
+        .email-header img {
+            max-height: 60px;
+        }
+        .email-header h1 {
+            color: white;
+            margin: 10px 0 0;
+            font-size: 24px;
+        }
+        .email-body {
+            padding: 30px;
+        }
+        .email-footer {
+            background-color: #f8fafc;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #718096;
+            border-top: 1px solid #e2e8f0;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #6b46c1;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin: 15px 0;
+        }
+        .info-box {
+            background-color: #f0f8ff;
+            border-left: 4px solid #3182ce;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .code-box {
+            background-color: #f7fafc;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 16px;
+            text-align: center;
+            letter-spacing: 2px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <h1>Article Writer Pro</h1>
+        </div>
+        
+        <div class="email-body">
+            {% block content %}{% endblock %}
+        </div>
+        
+        <div class="email-footer">
+            <p>© {{ current_year }} Article Writer Pro. All rights reserved.</p>
+            <p>If you didn't request this email, please ignore it or <a href="{{ url_for('main.index', _external=True) }}">contact us</a>.</p>
+        </div>
+    </div>
+</body>
+</html> 

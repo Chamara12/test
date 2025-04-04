@@ -1,0 +1,136 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - Article Writing Website{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <div class="welcome-message">
+            <h1>Welcome back, {{ session.full_name }}</h1>
+            <p class="subtitle">Here's an overview of your account activity</p>
+        </div>
+        <div class="quick-actions">
+            <a href="{{ url_for('main.generate_article') }}" class="primary-button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="button-icon">
+                    <path d="M12 5v14M5 12h14"></path>
+                </svg>
+                Create New Article
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-container">
+        <div class="stat-card primary">
+            <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 6v6l4 2"></path>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3>Available Credits</h3>
+                <p class="stat-value">{{ credits_balance|default(0)|intcomma }}</p>
+                <a href="{{ url_for('main.credits_dashboard') }}" class="stat-link">Manage Credits</a>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3>Your Articles</h3>
+                <p class="stat-value">{{ articles|length }}</p>
+                <a href="{{ url_for('main.generate_article') }}" class="stat-link">Generate New</a>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3>Account</h3>
+                <p class="stat-value-sm">{{ session.full_name }}</p>
+                <a href="{{ url_for('main.user_profile') }}" class="stat-link">View Profile</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Articles Section -->
+    <div class="content-card">
+        <div class="card-header">
+            <h2>Recent Articles</h2>
+            <a href="{{ url_for('main.generate_article') }}" class="secondary-button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="button-icon">
+                    <path d="M12 5v14M5 12h14"></path>
+                </svg>
+                New Article
+            </a>
+        </div>
+        
+        {% if articles %}
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Date</th>
+                        <th>Words</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in articles %}
+                    <tr>
+                        <td class="title-cell">{{ article.title }}</td>
+                        <td>{{ article.created_at.strftime('%b %d, %Y') }}</td>
+                        <td>{{ article.credits_cost|default("N/A") }}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('main.view_article', article_id=article.id) }}" class="action-button view">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    View
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+            </div>
+            <h3>No articles yet</h3>
+            <p>You haven't generated any articles yet. Create your first article to get started.</p>
+            <a href="{{ url_for('main.generate_article') }}" class="primary-button">
+                Create Your First Article
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

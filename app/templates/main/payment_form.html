@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+
+{% block title %}Complete Payment - Article Writing Website{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="py-4 px-6 bg-purple-600 text-white">
+            <h2 class="text-xl font-bold">Complete Your Payment</h2>
+        </div>
+        
+        <div class="py-4 px-6">
+            <div class="mb-6 bg-blue-50 border border-blue-200 rounded-md p-4">
+                <h3 class="font-semibold text-blue-800 mb-2">Payment Summary</h3>
+                <div class="flex justify-between py-2 border-b border-blue-100">
+                    <span>Amount:</span>
+                    <span class="font-medium">${{ '%.2f'|format(payment.amount) }}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-blue-100">
+                    <span>Credits:</span>
+                    <span class="font-medium">{{ payment.credits_added|intcomma }}</span>
+                </div>
+                <div class="flex justify-between py-2">
+                    <span>Payment Method:</span>
+                    <span class="font-medium">{{ payment_method|title }}</span>
+                </div>
+            </div>
+            
+            <form method="post" action="{{ url_for('main.process_payment') }}">
+                <input type="hidden" name="payment_id" value="{{ payment.id }}">
+                <input type="hidden" name="payment_method" value="{{ payment_method }}">
+                
+                {% if payment_method == 'stripe' %}
+                <!-- In a real implementation, you would include Stripe Elements or Checkout here -->
+                <div class="mb-4 p-4 border border-gray-200 rounded-md">
+                    <p class="text-gray-600 mb-2">For demonstration purposes, we're simulating a Stripe payment.</p>
+                    <p class="text-gray-600">In a production environment, this would include the Stripe payment form.</p>
+                </div>
+                {% elif payment_method == 'paypal' %}
+                <!-- PayPal payment form would go here -->
+                <div class="mb-4 p-4 border border-gray-200 rounded-md">
+                    <p class="text-gray-600 mb-2">For demonstration purposes, we're simulating a PayPal payment.</p>
+                    <p class="text-gray-600">In a production environment, this would include PayPal payment options.</p>
+                </div>
+                {% endif %}
+                
+                <div class="flex items-center justify-between mt-6">
+                    <a href="{{ url_for('main.credits_dashboard') }}" class="inline-block px-6 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+                        Cancel
+                    </a>
+                    <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline">
+                        Complete Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 
